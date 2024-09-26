@@ -1,0 +1,82 @@
+/** 
+  Spectre Banner
+  --------------
+  My banner
+*/
+
+@layer SpectreBanner {
+
+  :where(:root:not(:has(--init))) {
+    --init: 1;
+
+    --Social-padding: 20px;
+  }
+
+  section.SpectreBanner {
+    position: absolute;
+    top: 50vh;
+    right: 20vh;
+    z-index: 26;
+
+    transform: translateY(-50%);
+
+    color: black;
+
+    & li {
+      display: flex;
+      padding-top: 20px;
+      gap: 10px;
+      transform: translateY(50%);
+    }
+
+    & svg {
+      display: flex;
+      width: 25px;
+      height: 25px;
+      fill: currentColor;
+      margin-left: 5px
+    }
+
+    & p {
+      margin: 5px; 
+    }
+
+    & a {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--testColor);
+    }
+
+    &,
+    &::after {
+      color: #333;
+      display: inline-block;
+      padding: var(--Social-padding);
+      width: 140px;
+      border: 1px solid #f5f5f5;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      list-style: none;
+      width: 200px;
+    }
+
+    &::before {
+      content: '';
+    }
+
+    /* Socials */
+    &::after {
+      content: "SpectCOWs Dual CSS-VCPU Clock";
+
+      /* 
+        We extrapolate the padding, -1 * var = Flush with left side.
+        -1 * var = Centerized along card center without center style.
+      */
+
+      transform: translateY(-250%) translateX(calc(-1 * (var(--Social-padding) * 2)));
+    }
+
+  }
+
+}

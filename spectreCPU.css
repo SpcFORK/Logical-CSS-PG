@@ -1,0 +1,341 @@
+/** 
+  -----------------
+    CSS dual-core
+  -----------------
+  2024-02-12 ======
+
+  A dual core CPU 
+  implementation
+  in pure CSS,
+
+  with no JS.
+
+  -----------------
+
+  We run a keyframe
+  every 4 steps.
+
+  iterating through
+  the steps, we
+  invalidate the
+  cache.
+
+  This allows us
+  to recalculate
+  the values 
+  quicker the more
+  cores we
+  implement, 
+
+  and, the more
+  threads we can
+  make.
+
+  Hopefully, one
+  day, I can make
+  these 
+  generatively
+
+  -----------------
+  Ticks until 1k
+  -----------------
+  Single Core CSS:
+  50s
+
+  Dual Core CSS: 
+  ~22s
+  
+  JS: >10s
+  -----------------
+*/
+
+@layer SpectreCPU {
+
+  /* 
+  
+  Logic Handbook
+  --------------
+  
+  Has var:
+  :where(:root:has(--cpu-loaded))
+
+  Not Has var:
+  :where(:root:has(:not(--cpu-loaded)))
+  
+  */
+
+  @layer SpectreCPU.core;
+
+  :root {
+    --import-cpu-size: 0;
+    --cpu-size: 40px;
+    --cpu-border-radius: 5px;
+  }
+
+  /* --- */
+
+  @property --frame-out {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  @property --frame-out {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /* --- */
+
+  @property --ClockCycled-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #fff;
+  }
+
+  /* --- */
+
+  @property --Capture1 {
+    syntax: "<time>";
+    inherits: true;
+    initial-value: paused;
+  }
+
+  @property --Hoist1 {
+    syntax: "<time>";
+    inherits: true;
+    initial-value: paused;
+  }
+
+  @property --Capture2 {
+    syntax: "<time>";
+    inherits: true;
+    initial-value: paused;
+  }
+
+  @property --Hoist2 {
+    syntax: "<time>";
+    inherits: true;
+    initial-value: paused;
+  }
+
+  /* --- */
+
+  /* Initialize */
+  :where(:root:has(:not(--cpu-loaded))) {
+    --cpu-loaded: 1;
+    --tick: 0;
+
+    --Capture1: paused;
+    --Hoist1: paused;
+    --Capture2: paused;
+    --Hoist2: paused;
+
+    --frame-in: var(--frame-out, 0);
+    --frame-out: calc(var(--frame-in) + var(--click-state, 0));
+
+    animation:
+      hoist1 1ms infinite,
+      capture1 1ms infinite,
+      hoist2 1ms infinite,
+      capture2 1ms infinite;
+    ;
+
+    & .spectreCPU-output {
+      content: '';
+
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 50px;
+      color: var(--testColor, #ff0);
+    }
+
+    animation-play-state: var(--Hoist1),
+    var(--Capture1),
+    var(--Hoist2),
+    var(--Capture2);
+  }
+
+  /* --= Clock Cycles =-- */
+
+  @keyframes hoist1 {
+
+    0%,
+    100% {
+
+      --frame-in: var(--frame-hold1,
+          --frame-hold2,
+          0);
+
+      --testColor: #ff0000;
+
+      --Capture2: running;
+      --Hoist1: paused;
+    }
+  }
+
+  @keyframes capture1 {
+
+    0%,
+    100% {
+
+      --frame-hold1: var(--frame-out);
+
+      --testColor: #44ff00;
+
+      --Capture1: paused;
+      --Hoist1: running;
+    }
+  }
+
+  @keyframes hoist2 {
+
+    0%,
+    100% {
+
+      --frame-in: var(--frame-hold2,
+          --frame-hold1,
+          0);
+
+      --testColor: #0008ff;
+
+      --Capture1: running;
+      --Hoist2: paused;
+    }
+  }
+
+  @keyframes capture2 {
+
+    0%,
+    100% {
+
+      --frame-hold2: var(--frame-out);
+      --testColor: #00d5ff;
+
+      --Capture2: paused;
+      --Hoist2: running;
+    }
+  }
+
+  /* --== Mechanism ==-- */
+
+  section.spectreCPU {
+    display: block;
+    z-index: 25;
+    top: 61px;
+    left: 240px;
+    padding: 10px;
+    border-radius: 8px;
+
+    list-style: none;
+
+    &>* {
+      position: absolute;
+      inset: 0px;
+      width: 0px;
+    }
+
+    &>.phase-0 {
+      width: 100%;
+    }
+
+    &>.phase-0:hover+.phase-1 {
+      width: 100%;
+    }
+
+    &>.phase-1:hover+.phase-2 {
+      width: 100%;
+    }
+
+    &>.phase-2:hover+.phase-3 {
+      width: 100%;
+    }
+
+    & :hover+ :active {
+      background-color: #fcfcfc;
+    }
+
+    ::after {
+      counter-reset: frame var(--frame-out);
+      content: "Held Length: " counter(frame);
+      color: #333;
+      position: relative;
+      display: inline-block;
+      top: 50px;
+      left: 50px;
+      padding: 20px;
+      width: 140px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  /* --= Clock IO =-- */
+
+  :root:has(:active) {
+    --click-state: 1;
+  }
+
+  :root:has(.phase-0:hover) {
+    --Capture1: running;
+    --Hoist1: paused;
+
+    --Capture2: paused;
+    --Hoist2: paused;
+  }
+
+  :root:has(.phase-1:hover) {
+    --Capture1: paused;
+    --Hoist1: paused;
+
+    --Capture2: running;
+    --Hoist2: paused;
+  }
+
+  :root:has(.phase-2:hover) {
+    --Capture1: paused;
+    --Hoist1: running;
+
+    --Capture2: paused;
+    --Hoist2: paused;
+  }
+
+  :root:has(.phase-3:hover) {
+    --Capture1: paused;
+    --Hoist1: paused;
+
+    --Capture2: paused;
+    --Hoist2: running;
+  }
+
+  /* --- */
+
+  /* Refined presentation styles: */
+  * {
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+
+  div {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+  }
+
+  div:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+}
